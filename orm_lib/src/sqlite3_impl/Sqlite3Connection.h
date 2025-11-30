@@ -20,7 +20,11 @@
 #include <trantor/net/EventLoopThread.h>
 #include <trantor/utils/NonCopyable.h>
 #include <trantor/utils/SerialTaskQueue.h>
+#ifdef USE_SELF_MANAGED_SQLITE
+#include <sqlite/sqlite3.h>
+#else
 #include <sqlite3.h>
+#endif
 #include <functional>
 #include <iostream>
 #include <memory>

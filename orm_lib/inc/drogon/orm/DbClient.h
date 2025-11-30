@@ -325,7 +325,7 @@ class DROGON_EXPORT DbClient : public trantor::NonCopyable
     /**
      * @brief Enable auto-batch mode.
      * This feature is available only for PostgreSQL 14+ version and the
-     * LIBPQ_BATCH_MODE option is CMakeLists.txt is ON.
+     * DROGON_LIBPQ_BATCH_MODE option is CMakeLists.txt is ON.
      * When auto-batch mode is disabled (by default), every SQL query
      * pipelined in a connection is automatically executed in an individual
      * implicit transaction, this behavior ensures that SQL queries cannot make

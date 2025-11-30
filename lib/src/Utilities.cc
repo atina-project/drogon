@@ -26,7 +26,11 @@
 #include <io.h>
 #include <iomanip>
 #else
+#ifdef USE_SELF_MANAGED_LIBUUID
+#include <uuid/uuid.h>
+#else
 #include <uuid.h>
+#endif
 #include <unistd.h>
 #endif
 #include <zlib.h>

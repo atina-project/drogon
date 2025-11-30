@@ -19,7 +19,7 @@ add_executable(_drogon_ctl
 target_link_libraries(_drogon_ctl ${PROJECT_NAME})
 if (WIN32 AND BUILD_SHARED_LIBS)
   set(DROGON_FILE $<TARGET_FILE:drogon>)
-  if (USE_SUBMODULE)
+  if (DROGON_USE_SUBMODULE)
     set(TRANTOR_FILE $<TARGET_FILE:trantor>)
   else()
     set(TRANTOR_FILE $<TARGET_FILE:Trantor::Trantor>)

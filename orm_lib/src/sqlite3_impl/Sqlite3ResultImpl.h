@@ -16,7 +16,11 @@
 
 #include "../ResultImpl.h"
 
+#ifdef USE_SELF_MANAGED_SQLITE
+#include <sqlite/sqlite3.h>
+#else
 #include <sqlite3.h>
+#endif
 #include <memory>
 #include <string>
 #include <unordered_map>

@@ -4,24 +4,35 @@ project(drogon)
 
 message(STATUS "compiler: " ${CMAKE_CXX_COMPILER_ID})
 
-option(BUILD_CTL "Build drogon_ctl" ON)
-option(BUILD_EXAMPLES "Build examples" ON)
-option(BUILD_ORM "Build orm" ON)
-option(COZ_PROFILING "Use coz for profiling" OFF)
-option(BUILD_SHARED_LIBS "Build drogon as a shared lib" OFF)
-option(BUILD_DOC "Build Doxygen documentation" OFF)
-option(BUILD_BROTLI "Build Brotli" ON)
-option(BUILD_YAML_CONFIG "Build yaml config" ON)
-option(USE_SUBMODULE "Use trantor as a submodule" ON)
-option(USE_STATIC_LIBS_ONLY "Use only static libraries as dependencies" OFF)
+option(DROGON_BUILD_CTL "Build drogon_ctl" ON)
+option(DROGON_BUILD_EXAMPLES "Build examples" ON)
+option(DROGON_BUILD_ORM "Build orm" ON)
+option(DROGON_COZ_PROFILING "Use coz for profiling" OFF)
+option(DROGON_BUILD_DOC "Build Doxygen documentation" OFF)
+option(DROGON_BUILD_BROTLI "Build Brotli" ON)
+option(DROGON_BUILD_YAML_CONFIG "Build yaml config" ON)
+option(DROGON_USE_SUBMODULE "Use trantor as a submodule" ON)
+option(DROGON_USE_STATIC_LIBS_ONLY "Use only static libraries as dependencies" OFF)
+
+option(DROGON_USE_SELF_MANAGED_JSONCPP "Use a self-managed jsoncpp as dependency" OFF)
+# set DROGON_SELF_MANAGED_JSONCPP_INCLUDE_DIR and DROGON_SELF_MANAGED_JSONCPP_LIB
+
+option(DROGON_USE_SELF_MANAGED_LIBUUID "Use a self-managed libuuid as dependency" OFF)
+# set DROGON_SELF_MANAGED_LIBUUID_INCLUDE_DIR and DROGON_SELF_MANAGED_LIBUUID_LIB
+
+option(DROGON_USE_SELF_MANAGED_ZLIB "Use a self-managed zlib as dependency" OFF)
+# set DROGON_SELF_MANAGED_ZLIB_INCLUDE_DIR and DROGON_SELF_MANAGED_ZLIB_LIB
+
+option(DROGON_USE_SELF_MANAGED_SQLITE "Use a self-managed sqlite3 as dependency" OFF)
+# set DROGON_SELF_MANAGED_SQLITE_INCLUDE_DIR and DROGON_SELF_MANAGED_SQLITE_LIB
 
 include(CMakeDependentOption)
-CMAKE_DEPENDENT_OPTION(BUILD_POSTGRESQL "Build with postgresql support" ON "BUILD_ORM" OFF)
-CMAKE_DEPENDENT_OPTION(LIBPQ_BATCH_MODE "Use batch mode for libpq" ON "BUILD_POSTGRESQL" OFF)
-CMAKE_DEPENDENT_OPTION(BUILD_MYSQL "Build with mysql support" ON "BUILD_ORM" OFF)
-CMAKE_DEPENDENT_OPTION(BUILD_SQLITE "Build with sqlite3 support" ON "BUILD_ORM" OFF)
-CMAKE_DEPENDENT_OPTION(BUILD_REDIS "Build with redis support" ON "BUILD_ORM" OFF)
-CMAKE_DEPENDENT_OPTION(USE_SPDLOG "Allow using the spdlog logging library" OFF "USE_SUBMODULE" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_BUILD_POSTGRESQL "Build with postgresql support" OFF "DROGON_BUILD_ORM" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_LIBPQ_BATCH_MODE "Use batch mode for libpq" OFF "DROGON_BUILD_POSTGRESQL" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_BUILD_MYSQL "Build with mysql support" OFF "DROGON_BUILD_ORM" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_BUILD_SQLITE "Build with sqlite3 support" OFF "DROGON_BUILD_ORM" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_BUILD_REDIS "Build with redis support" OFF "DROGON_BUILD_ORM" OFF)
+CMAKE_DEPENDENT_OPTION(DROGON_USE_SPDLOG "Allow using the spdlog logging library" OFF "DROGON_USE_SUBMODULE" OFF)
 
 set(DROGON_MAJOR_VERSION 1)
 set(DROGON_MINOR_VERSION 9)
@@ -56,7 +67,7 @@ endif ()
 add_library(${PROJECT_NAME})
 if (BUILD_SHARED_LIBS)
     find_package(Threads)
-    # set(BUILD_EXAMPLES FALSE)
+    # set(DROGON_BUILD_EXAMPLES FALSE)
     list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
         "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR}" isSystemDir)
     if ("${isSystemDir}" STREQUAL "-1")
@@ -78,18 +89,18 @@ if (BUILD_SHARED_LIBS)
     endif ()
 endif (BUILD_SHARED_LIBS)
 
-if(USE_STATIC_LIBS_ONLY)
+if(DROGON_USE_STATIC_LIBS_ONLY)
     set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-endif(USE_STATIC_LIBS_ONLY)
+endif(DROGON_USE_STATIC_LIBS_ONLY)
 
-if(USE_SPDLOG)
+if(DROGON_USE_SPDLOG)
   find_package(spdlog CONFIG)
   if(spdlog_FOUND)
     message(STATUS "spdlog found!")
     target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog_header_only)
     target_compile_definitions(${PROJECT_NAME} PUBLIC DROGON_SPDLOG_SUPPORT SPDLOG_FMT_EXTERNAL FMT_HEADER_ONLY)
   endif(spdlog_FOUND)
-endif(USE_SPDLOG)
+endif(DROGON_USE_SPDLOG)
 
 if (NOT ${CMAKE_PLATFORM_NAME} STREQUAL "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES GNU)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Werror)
@@ -112,7 +123,7 @@ elseif (HAS_ANY AND HAS_STRING_VIEW AND HAS_COROUTINE)
 else ()
     set(DROGON_CXX_STANDARD 17)
 endif ()
-if(USE_SUBMODULE)
+if(DROGON_USE_SUBMODULE)
     target_include_directories(
             ${PROJECT_NAME}
             PUBLIC
@@ -134,7 +145,7 @@ if (WIN32)
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/mman-win32>)
 endif (WIN32)
 
-if(USE_SUBMODULE)
+if(DROGON_USE_SUBMODULE)
 add_subdirectory(trantor)
 target_link_libraries(${PROJECT_NAME} PUBLIC trantor)
 else()
@@ -187,12 +198,18 @@ endif()
 
 
 # jsoncpp
-find_package(Jsoncpp REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC Jsoncpp_lib)
-list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${JSONCPP_INCLUDE_DIRS})
+if(DROGON_USE_SELF_MANAGED_JSONCPP)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${DROGON_SELF_MANAGED_JSONCPP_LIB})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${DROGON_SELF_MANAGED_JSONCPP_INCLUDE_DIR})
+    list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${DROGON_SELF_MANAGED_JSONCPP_INCLUDE_DIR})
+else()
+    find_package(Jsoncpp REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Jsoncpp_lib)
+    list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${JSONCPP_INCLUDE_DIRS})
+endif()
 
 # yamlcpp
-if(BUILD_YAML_CONFIG)
+if(DROGON_BUILD_YAML_CONFIG)
     find_package(yaml-cpp QUIET)
     if(yaml-cpp_FOUND)
         if (NOT YAML_CPP_LIBRARIES)
@@ -214,41 +231,50 @@ if(BUILD_YAML_CONFIG)
     endif()
 else()
     message(STATUS "yaml-cpp not used")
-endif(BUILD_YAML_CONFIG)
+endif(DROGON_BUILD_YAML_CONFIG)
 
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD"
     AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD"
     AND NOT WIN32)
-    find_package(UUID REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE UUID_lib)
 
-    try_compile(normal_uuid ${CMAKE_BINARY_DIR}/cmaketest
-        ${PROJECT_SOURCE_DIR}/cmake/tests/normal_uuid_lib_test.cc
-        LINK_LIBRARIES UUID_lib
-        OUTPUT_VARIABLE NORMAL_UUID_COMPILE_OUTPUT)
-    try_compile(ossp_uuid ${CMAKE_BINARY_DIR}/cmaketest
-        ${PROJECT_SOURCE_DIR}/cmake/tests/ossp_uuid_lib_test.cc
-        LINK_LIBRARIES UUID_lib
-        OUTPUT_VARIABLE OSSP_UUID_COMPILE_OUTPUT)
-    if (normal_uuid)
+    if(DROGON_USE_SELF_MANAGED_LIBUUID)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${DROGON_SELF_MANAGED_LIBUUID_LIB})
+        target_include_directories(${PROJECT_NAME} PRIVATE ${DROGON_SELF_MANAGED_LIBUUID_INCLUDE_DIR})
         add_definitions(-DUSE_OSSP_UUID=0)
-    elseif (ossp_uuid)
-        add_definitions(-DUSE_OSSP_UUID=1)
-    else ()
-        message(FATAL_ERROR "uuid lib error:\n${NORMAL_UUID_COMPILE_OUTPUT}\n${OSSP_UUID_COMPILE_OUTPUT}")
-    endif ()
+        add_definitions(-DUSE_SELF_MANAGED_LIBUUID)
+    else()
+        find_package(UUID REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE UUID_lib)
+
+        try_compile(normal_uuid ${CMAKE_BINARY_DIR}/cmaketest
+            ${PROJECT_SOURCE_DIR}/cmake/tests/normal_uuid_lib_test.cc
+            LINK_LIBRARIES UUID_lib
+            OUTPUT_VARIABLE NORMAL_UUID_COMPILE_OUTPUT)
+        try_compile(ossp_uuid ${CMAKE_BINARY_DIR}/cmaketest
+            ${PROJECT_SOURCE_DIR}/cmake/tests/ossp_uuid_lib_test.cc
+            LINK_LIBRARIES UUID_lib
+            OUTPUT_VARIABLE OSSP_UUID_COMPILE_OUTPUT)
+        if (normal_uuid)
+            add_definitions(-DUSE_OSSP_UUID=0)
+        elseif (ossp_uuid)
+            add_definitions(-DUSE_OSSP_UUID=1)
+        else ()
+            message(FATAL_ERROR "uuid lib error:\n${NORMAL_UUID_COMPILE_OUTPUT}\n${OSSP_UUID_COMPILE_OUTPUT}")
+        endif ()
+    endif()
+
 endif (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD"
     AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD"
     AND NOT WIN32)
 
-if (BUILD_BROTLI)
+if (DROGON_BUILD_BROTLI)
     find_package(Brotli)
     if (Brotli_FOUND)
         message(STATUS "Brotli found")
         add_definitions(-DUSE_BROTLI)
         target_link_libraries(${PROJECT_NAME} PRIVATE Brotli_lib)
     endif (Brotli_FOUND)
-endif (BUILD_BROTLI)
+endif (DROGON_BUILD_BROTLI)
 
 set(DROGON_SOURCES
     lib/src/AOPAdvice.cc
@@ -359,7 +385,7 @@ elseif(WIN32)
         third_party/mman-win32/mman.h)
 endif()
 
-if (BUILD_POSTGRESQL)
+if (DROGON_BUILD_POSTGRESQL)
     # find postgres
     find_package(pg)
     if (pg_FOUND)
@@ -374,12 +400,12 @@ if (BUILD_POSTGRESQL)
             ${private_headers}
             orm_lib/src/postgresql_impl/PostgreSQLResultImpl.h
             orm_lib/src/postgresql_impl/PgListener.h)
-        if (LIBPQ_BATCH_MODE)
+        if (DROGON_LIBPQ_BATCH_MODE)
             try_compile(libpq_supports_batch ${CMAKE_BINARY_DIR}/cmaketest
                 ${PROJECT_SOURCE_DIR}/cmake/tests/test_libpq_batch_mode.cc
                 LINK_LIBRARIES ${PostgreSQL_LIBRARIES}
                 CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${PostgreSQL_INCLUDE_DIR}")
-        endif (LIBPQ_BATCH_MODE)
+        endif (DROGON_LIBPQ_BATCH_MODE)
         if (libpq_supports_batch)
             message(STATUS "The libpq supports batch mode")
             option(LIBPQ_SUPPORTS_BATCH_MODE "libpq batch mode" ON)
@@ -396,9 +422,9 @@ if (BUILD_POSTGRESQL)
                 orm_lib/src/postgresql_impl/PgConnection.h)
         endif (libpq_supports_batch)
     endif (pg_FOUND)
-endif (BUILD_POSTGRESQL)
+endif (DROGON_BUILD_POSTGRESQL)
 
-if (BUILD_MYSQL)
+if (DROGON_BUILD_MYSQL)
     # Find mysql, only mariadb client library is supported
     find_package(MySQL QUIET)
     find_package(unofficial-libmariadb QUIET)
@@ -432,19 +458,27 @@ if (BUILD_MYSQL)
     else (DROGON_FOUND_MYSQL)
         message(STATUS "MySql was not found.")
     endif (DROGON_FOUND_MYSQL)
-endif (BUILD_MYSQL)
+endif (DROGON_BUILD_MYSQL)
 
-if (BUILD_SQLITE)
-    # Find sqlite3.
-    find_package(SQLite3 QUIET)
-    find_package(unofficial-sqlite3 QUIET)
-    if (SQLite3_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE SQLite3_lib)
+if (DROGON_BUILD_SQLITE)
+
+    if(DROGON_USE_SELF_MANAGED_SQLITE)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${DROGON_SELF_MANAGED_SQLITE_LIB})
+        target_include_directories(${PROJECT_NAME} PRIVATE ${DROGON_SELF_MANAGED_SQLITE_INCLUDE_DIR})
         set(DROGON_FOUND_SQLite3 TRUE)
-    elseif (unofficial-sqlite3_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::sqlite3::sqlite3)
-        set(DROGON_FOUND_SQLite3 TRUE)
-    endif ()
+        add_definitions(-DUSE_SELF_MANAGED_SQLITE)
+    else()
+        # Find sqlite3.
+        find_package(SQLite3 QUIET)
+        find_package(unofficial-sqlite3 QUIET)
+        if (SQLite3_FOUND)
+            target_link_libraries(${PROJECT_NAME} PRIVATE SQLite3_lib)
+            set(DROGON_FOUND_SQLite3 TRUE)
+        elseif (unofficial-sqlite3_FOUND)
+            target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::sqlite3::sqlite3)
+            set(DROGON_FOUND_SQLite3 TRUE)
+        endif ()
+    endif()
 
     if (DROGON_FOUND_SQLite3)
         message(STATUS "Ok! We find sqlite3!")
@@ -459,9 +493,10 @@ if (BUILD_SQLITE)
     else (DROGON_FOUND_SQLite3)
         message(STATUS "sqlite3 was not found.")
     endif (DROGON_FOUND_SQLite3)
-endif (BUILD_SQLITE)
 
-if (BUILD_REDIS)
+endif (DROGON_BUILD_SQLITE)
+
+if (DROGON_BUILD_REDIS)
     find_package(Hiredis)
     if (Hiredis_FOUND)
         add_definitions(-DUSE_REDIS)
@@ -486,7 +521,7 @@ if (BUILD_REDIS)
             nosql_lib/redis/src/RedisSubscriberImpl.h)
 
     endif (Hiredis_FOUND)
-endif (BUILD_REDIS)
+endif (DROGON_BUILD_REDIS)
 
 if (NOT Hiredis_FOUND)
     set(DROGON_SOURCES
@@ -503,8 +538,13 @@ if (BUILD_TESTING)
     add_subdirectory(nosql_lib/redis/tests)
 endif (BUILD_TESTING)
 
-find_package(ZLIB REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
+if(DROGON_USE_SELF_MANAGED_ZLIB)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${DROGON_SELF_MANAGED_ZLIB_LIB})
+else()
+    find_package(ZLIB REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
+endif()
+
 
 execute_process(COMMAND "git" rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -519,11 +559,11 @@ else (DROGON_CXX_STANDARD EQUAL 20)
     option(USE_COROUTINE "Enable C++20 coroutine support" OFF)
 endif (DROGON_CXX_STANDARD EQUAL 20)
 
-if (BUILD_EXAMPLES)
+if (DROGON_BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif (BUILD_EXAMPLES)
+endif (DROGON_BUILD_EXAMPLES)
 
-if (BUILD_CTL)
+if (DROGON_BUILD_CTL)
     if (CMAKE_CROSSCOMPILING)
         find_program(HOST_DROGON_CTL _drogon_ctl)
         if (NOT HOST_DROGON_CTL)
@@ -534,9 +574,9 @@ if (BUILD_CTL)
         set(DROGON_CTL "$<TARGET_FILE:_drogon_ctl>")
     endif (CMAKE_CROSSCOMPILING)
     add_subdirectory(drogon_ctl)
-endif (BUILD_CTL)
+endif (DROGON_BUILD_CTL)
 
-if (COZ_PROFILING)
+if (DROGON_COZ_PROFILING)
     find_package(coz-profiler REQUIRED)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DCOZ_PROFILING=1)
     # If linked will not need to be ran with `coz run --- [executable]` to run the
@@ -544,7 +584,7 @@ if (COZ_PROFILING)
     # information while trying to generate it's own sources
     # target_link_libraries(${PROJECT_NAME} PUBLIC coz::coz)
     target_include_directories(${PROJECT_NAME} PUBLIC ${COZ_INCLUDE_DIRS})
-endif (COZ_PROFILING)
+endif (DROGON_COZ_PROFILING)
 
 set(DROGON_SOURCES
     ${DROGON_SOURCES}
@@ -689,77 +729,77 @@ endif (BUILD_TESTING)
 
 # Installation
 
-install(TARGETS ${PROJECT_NAME}
-    EXPORT DrogonTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
+# install(TARGETS ${PROJECT_NAME}
+#     EXPORT DrogonTargets
+#     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+#     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+#     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
 
-install(FILES ${DROGON_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon)
+# install(FILES ${DROGON_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon)
 
-set(ORM_HEADERS
-    orm_lib/inc/drogon/orm/ArrayParser.h
-    orm_lib/inc/drogon/orm/BaseBuilder.h
-    orm_lib/inc/drogon/orm/Criteria.h
-    orm_lib/inc/drogon/orm/DbClient.h
-    orm_lib/inc/drogon/orm/DbConfig.h
-    orm_lib/inc/drogon/orm/DbListener.h
-    orm_lib/inc/drogon/orm/DbTypes.h
-    orm_lib/inc/drogon/orm/Exception.h
-    orm_lib/inc/drogon/orm/Field.h
-    orm_lib/inc/drogon/orm/FunctionTraits.h
-    orm_lib/inc/drogon/orm/Mapper.h
-    orm_lib/inc/drogon/orm/CoroMapper.h
-    orm_lib/inc/drogon/orm/Result.h
-    orm_lib/inc/drogon/orm/ResultIterator.h
-    orm_lib/inc/drogon/orm/Row.h
-    orm_lib/inc/drogon/orm/RowIterator.h
-    orm_lib/inc/drogon/orm/SqlBinder.h
-    orm_lib/inc/drogon/orm/RestfulController.h)
-install(FILES ${ORM_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/orm)
+# set(ORM_HEADERS
+#     orm_lib/inc/drogon/orm/ArrayParser.h
+#     orm_lib/inc/drogon/orm/BaseBuilder.h
+#     orm_lib/inc/drogon/orm/Criteria.h
+#     orm_lib/inc/drogon/orm/DbClient.h
+#     orm_lib/inc/drogon/orm/DbConfig.h
+#     orm_lib/inc/drogon/orm/DbListener.h
+#     orm_lib/inc/drogon/orm/DbTypes.h
+#     orm_lib/inc/drogon/orm/Exception.h
+#     orm_lib/inc/drogon/orm/Field.h
+#     orm_lib/inc/drogon/orm/FunctionTraits.h
+#     orm_lib/inc/drogon/orm/Mapper.h
+#     orm_lib/inc/drogon/orm/CoroMapper.h
+#     orm_lib/inc/drogon/orm/Result.h
+#     orm_lib/inc/drogon/orm/ResultIterator.h
+#     orm_lib/inc/drogon/orm/Row.h
+#     orm_lib/inc/drogon/orm/RowIterator.h
+#     orm_lib/inc/drogon/orm/SqlBinder.h
+#     orm_lib/inc/drogon/orm/RestfulController.h)
+# install(FILES ${ORM_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/orm)
 
-set(NOSQL_HEADERS
-    nosql_lib/redis/inc/drogon/nosql/RedisClient.h
-    nosql_lib/redis/inc/drogon/nosql/RedisResult.h
-    nosql_lib/redis/inc/drogon/nosql/RedisSubscriber.h
-    nosql_lib/redis/inc/drogon/nosql/RedisException.h)
-install(FILES ${NOSQL_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/nosql)
+# set(NOSQL_HEADERS
+#     nosql_lib/redis/inc/drogon/nosql/RedisClient.h
+#     nosql_lib/redis/inc/drogon/nosql/RedisResult.h
+#     nosql_lib/redis/inc/drogon/nosql/RedisSubscriber.h
+#     nosql_lib/redis/inc/drogon/nosql/RedisException.h)
+# install(FILES ${NOSQL_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/nosql)
 
-set(DROGON_UTIL_HEADERS
-    lib/inc/drogon/utils/coroutine.h
-    lib/inc/drogon/utils/FunctionTraits.h
-    lib/inc/drogon/utils/HttpConstraint.h
-    lib/inc/drogon/utils/OStringStream.h
-    lib/inc/drogon/utils/Utilities.h
-    lib/inc/drogon/utils/monitoring.h)
-install(FILES ${DROGON_UTIL_HEADERS}
-    DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils)
+# set(DROGON_UTIL_HEADERS
+#     lib/inc/drogon/utils/coroutine.h
+#     lib/inc/drogon/utils/FunctionTraits.h
+#     lib/inc/drogon/utils/HttpConstraint.h
+#     lib/inc/drogon/utils/OStringStream.h
+#     lib/inc/drogon/utils/Utilities.h
+#     lib/inc/drogon/utils/monitoring.h)
+# install(FILES ${DROGON_UTIL_HEADERS}
+#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils)
 
-set(DROGON_MONITORING_HEADERS
-    lib/inc/drogon/utils/monitoring/Counter.h
-    lib/inc/drogon/utils/monitoring/Metric.h
-    lib/inc/drogon/utils/monitoring/Registry.h
-    lib/inc/drogon/utils/monitoring/Collector.h
-    lib/inc/drogon/utils/monitoring/Sample.h
-    lib/inc/drogon/utils/monitoring/Gauge.h
-    lib/inc/drogon/utils/monitoring/Histogram.h)
+# set(DROGON_MONITORING_HEADERS
+#     lib/inc/drogon/utils/monitoring/Counter.h
+#     lib/inc/drogon/utils/monitoring/Metric.h
+#     lib/inc/drogon/utils/monitoring/Registry.h
+#     lib/inc/drogon/utils/monitoring/Collector.h
+#     lib/inc/drogon/utils/monitoring/Sample.h
+#     lib/inc/drogon/utils/monitoring/Gauge.h
+#     lib/inc/drogon/utils/monitoring/Histogram.h)
 
-install(FILES ${DROGON_MONITORING_HEADERS}
-    DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils/monitoring)
+# install(FILES ${DROGON_MONITORING_HEADERS}
+#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils/monitoring)
 
-set(DROGON_PLUGIN_HEADERS
-    lib/inc/drogon/plugins/Plugin.h
-    lib/inc/drogon/plugins/Redirector.h
-    lib/inc/drogon/plugins/SecureSSLRedirector.h
-    lib/inc/drogon/plugins/AccessLogger.h
-    lib/inc/drogon/plugins/RealIpResolver.h
-    lib/inc/drogon/plugins/Hodor.h
-    lib/inc/drogon/plugins/SlashRemover.h
-    lib/inc/drogon/plugins/GlobalFilters.h
-    lib/inc/drogon/plugins/PromExporter.h)
+# set(DROGON_PLUGIN_HEADERS
+#     lib/inc/drogon/plugins/Plugin.h
+#     lib/inc/drogon/plugins/Redirector.h
+#     lib/inc/drogon/plugins/SecureSSLRedirector.h
+#     lib/inc/drogon/plugins/AccessLogger.h
+#     lib/inc/drogon/plugins/RealIpResolver.h
+#     lib/inc/drogon/plugins/Hodor.h
+#     lib/inc/drogon/plugins/SlashRemover.h
+#     lib/inc/drogon/plugins/GlobalFilters.h
+#     lib/inc/drogon/plugins/PromExporter.h)
 
-install(FILES ${DROGON_PLUGIN_HEADERS}
-    DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/plugins)
+# install(FILES ${DROGON_PLUGIN_HEADERS}
+#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/plugins)
 
 target_sources(${PROJECT_NAME} PRIVATE
                ${DROGON_SOURCES}
@@ -783,84 +823,84 @@ source_group("Private Headers"
              FILES
              ${private_headers})
 
-# Export the package for use from the build-tree (this registers the build-tree
-# with a global cmake-registry) export(PACKAGE Drogon)
+# # Export the package for use from the build-tree (this registers the build-tree
+# # with a global cmake-registry) export(PACKAGE Drogon)
 
-include(CMakePackageConfigHelpers)
-# ... for the install tree
-configure_package_config_file(
-    cmake/templates/DrogonConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake
-    INSTALL_DESTINATION
-    ${INSTALL_DROGON_CMAKE_DIR})
+# include(CMakePackageConfigHelpers)
+# # ... for the install tree
+# configure_package_config_file(
+#     cmake/templates/DrogonConfig.cmake.in
+#     ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake
+#     INSTALL_DESTINATION
+#     ${INSTALL_DROGON_CMAKE_DIR})
 
-# version
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake
-    VERSION ${DROGON_VERSION}
-    COMPATIBILITY SameMajorVersion)
+# # version
+# write_basic_package_version_file(
+#     ${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake
+#     VERSION ${DROGON_VERSION}
+#     COMPATIBILITY SameMajorVersion)
 
-# Install the DrogonConfig.cmake and DrogonConfigVersion.cmake
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findcoz-profiler.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindFilesystem.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DrogonUtilities.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ParseAndAddDrogonTests.cmake"
-    DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
-    COMPONENT dev)
+# # Install the DrogonConfig.cmake and DrogonConfigVersion.cmake
+# install(FILES
+#     "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake"
+#     "${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findcoz-profiler.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindFilesystem.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DrogonUtilities.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ParseAndAddDrogonTests.cmake"
+#     DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
+#     COMPONENT dev)
 
-# Install the export set for use with the install-tree
-install(EXPORT DrogonTargets
-    DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
-    NAMESPACE Drogon::
-    COMPONENT dev)
+# # Install the export set for use with the install-tree
+# install(EXPORT DrogonTargets
+#     DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
+#     NAMESPACE Drogon::
+#     COMPONENT dev)
 
-# Doxygen documentation
-find_package(Doxygen OPTIONAL_COMPONENTS dot dia)
-if(DOXYGEN_FOUND)
-  set(DOXYGEN_PROJECT_BRIEF "C++14/17-based HTTP application framework")
-  set(DOXYGEN_OUTPUT_DIRECTORY docs/${PROJECT_NAME})
-  set(DOXYGEN_GENERATE_LATEX NO)
-  set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-  set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
-  set(DOXYGEN_STRIP_FROM_INC_PATH ${PROJECT_SOURCE_DIR}/lib/inc
-                                  ${PROJECT_SOURCE_DIR}/orm_lib/inc
-                                  ${CMAKE_CURRENT_BINARY_DIR}/exports)
-  set(DOXYGEN_EXAMPLE_PATTERNS *)
-  if(WIN32)
-    set(DOXYGEN_PREDEFINED _WIN32)
-  endif(WIN32)
-  doxygen_add_docs(doc_${PROJECT_NAME}
-                   README.md
-                   README.zh-CN.md
-                   README.zh-TW.md
-                   ChangeLog.md
-                   CONTRIBUTING.md
-                   ${DROGON_HEADERS}
-                   ${DROGON_UTIL_HEADERS}
-                   ${DROGON_PLUGIN_HEADERS}
-                   ${ORM_HEADERS}
-                   COMMENT "Generate documentation")
-  if(NOT TARGET doc)
-    add_custom_target(doc)
-  endif()
-  add_dependencies(doc doc_${PROJECT_NAME})
-  if (BUILD_DOC)
-    add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
-    # Don't install twice, so limit to Debug (assume developer)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
-            TYPE DOC
-            CONFIGURATIONS Debug)
-  endif(BUILD_DOC)
-endif(DOXYGEN_FOUND)
+# # Doxygen documentation
+# find_package(Doxygen OPTIONAL_COMPONENTS dot dia)
+# if(DOXYGEN_FOUND)
+#   set(DOXYGEN_PROJECT_BRIEF "C++14/17-based HTTP application framework")
+#   set(DOXYGEN_OUTPUT_DIRECTORY docs/${PROJECT_NAME})
+#   set(DOXYGEN_GENERATE_LATEX NO)
+#   set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+#   set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+#   set(DOXYGEN_STRIP_FROM_INC_PATH ${PROJECT_SOURCE_DIR}/lib/inc
+#                                   ${PROJECT_SOURCE_DIR}/orm_lib/inc
+#                                   ${CMAKE_CURRENT_BINARY_DIR}/exports)
+#   set(DOXYGEN_EXAMPLE_PATTERNS *)
+#   if(WIN32)
+#     set(DOXYGEN_PREDEFINED _WIN32)
+#   endif(WIN32)
+#   doxygen_add_docs(doc_${PROJECT_NAME}
+#                    README.md
+#                    README.zh-CN.md
+#                    README.zh-TW.md
+#                    ChangeLog.md
+#                    CONTRIBUTING.md
+#                    ${DROGON_HEADERS}
+#                    ${DROGON_UTIL_HEADERS}
+#                    ${DROGON_PLUGIN_HEADERS}
+#                    ${ORM_HEADERS}
+#                    COMMENT "Generate documentation")
+#   if(NOT TARGET doc)
+#     add_custom_target(doc)
+#   endif()
+#   add_dependencies(doc doc_${PROJECT_NAME})
+#   if (DROGON_BUILD_DOC)
+#     add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
+#     # Don't install twice, so limit to Debug (assume developer)
+#     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
+#             TYPE DOC
+#             CONFIGURATIONS Debug)
+#   endif(DROGON_BUILD_DOC)
+# endif(DOXYGEN_FOUND)
 
-include(cmake/Packages.cmake)
+# include(cmake/Packages.cmake)
