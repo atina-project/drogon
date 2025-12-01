@@ -908,9 +908,11 @@ if(NOT ${DROGON_NO_INSTALL})
     if (DROGON_BUILD_DOC)
         add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
         # Don't install twice, so limit to Debug (assume developer)
-        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
-                TYPE DOC
-                CONFIGURATIONS Debug)
+        if(NOT ${DROGON_NO_INSTALL})
+            install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
+                    TYPE DOC
+                    CONFIGURATIONS Debug)
+        endif()
     endif(DROGON_BUILD_DOC)
     endif(DOXYGEN_FOUND)
 

@@ -55,8 +55,10 @@ foreach(target ${example_targets})
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endforeach()
 
-install(TARGETS ${example_targets}
-    RUNTIME DESTINATION ${INSTALL_BIN_DIR})
+if(NOT ${DROGON_NO_INSTALL})
+    install(TARGETS ${example_targets}
+        RUNTIME DESTINATION ${INSTALL_BIN_DIR})
+endif()
 
 # Add warnings for our example targets--some warnings (such as -Wunused-parameter) only appear
 # when the templated functions are instantiated at their point of use.
