@@ -13,6 +13,7 @@ option(DROGON_BUILD_BROTLI "Build Brotli" ON)
 option(DROGON_BUILD_YAML_CONFIG "Build yaml config" ON)
 option(DROGON_USE_SUBMODULE "Use trantor as a submodule" ON)
 option(DROGON_USE_STATIC_LIBS_ONLY "Use only static libraries as dependencies" OFF)
+option(DROGON_NO_INSTALL "Do not install drogon" OFF)
 
 option(DROGON_USE_SELF_MANAGED_JSONCPP "Use a self-managed jsoncpp as dependency" OFF)
 # set DROGON_SELF_MANAGED_JSONCPP_INCLUDE_DIR and DROGON_SELF_MANAGED_JSONCPP_LIB
@@ -40,6 +41,10 @@ set(DROGON_PATCH_VERSION 11)
 set(DROGON_VERSION
     ${DROGON_MAJOR_VERSION}.${DROGON_MINOR_VERSION}.${DROGON_PATCH_VERSION})
 set(DROGON_VERSION_STRING "${DROGON_VERSION}")
+
+if(${DROGON_NO_INSTALL})
+    set(TRANTOR_NO_INSTALL ON)
+endif()
 
 include(GNUInstallDirs)
 # Offer the user the choice of overriding the installation directories
@@ -729,77 +734,81 @@ endif (BUILD_TESTING)
 
 # Installation
 
-# install(TARGETS ${PROJECT_NAME}
-#     EXPORT DrogonTargets
-#     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-#     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-#     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
+if(NOT ${DROGON_NO_INSTALL})
 
-# install(FILES ${DROGON_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon)
+    install(TARGETS ${PROJECT_NAME}
+        EXPORT DrogonTargets
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
 
-# set(ORM_HEADERS
-#     orm_lib/inc/drogon/orm/ArrayParser.h
-#     orm_lib/inc/drogon/orm/BaseBuilder.h
-#     orm_lib/inc/drogon/orm/Criteria.h
-#     orm_lib/inc/drogon/orm/DbClient.h
-#     orm_lib/inc/drogon/orm/DbConfig.h
-#     orm_lib/inc/drogon/orm/DbListener.h
-#     orm_lib/inc/drogon/orm/DbTypes.h
-#     orm_lib/inc/drogon/orm/Exception.h
-#     orm_lib/inc/drogon/orm/Field.h
-#     orm_lib/inc/drogon/orm/FunctionTraits.h
-#     orm_lib/inc/drogon/orm/Mapper.h
-#     orm_lib/inc/drogon/orm/CoroMapper.h
-#     orm_lib/inc/drogon/orm/Result.h
-#     orm_lib/inc/drogon/orm/ResultIterator.h
-#     orm_lib/inc/drogon/orm/Row.h
-#     orm_lib/inc/drogon/orm/RowIterator.h
-#     orm_lib/inc/drogon/orm/SqlBinder.h
-#     orm_lib/inc/drogon/orm/RestfulController.h)
-# install(FILES ${ORM_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/orm)
+    install(FILES ${DROGON_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon)
 
-# set(NOSQL_HEADERS
-#     nosql_lib/redis/inc/drogon/nosql/RedisClient.h
-#     nosql_lib/redis/inc/drogon/nosql/RedisResult.h
-#     nosql_lib/redis/inc/drogon/nosql/RedisSubscriber.h
-#     nosql_lib/redis/inc/drogon/nosql/RedisException.h)
-# install(FILES ${NOSQL_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/nosql)
+    set(ORM_HEADERS
+        orm_lib/inc/drogon/orm/ArrayParser.h
+        orm_lib/inc/drogon/orm/BaseBuilder.h
+        orm_lib/inc/drogon/orm/Criteria.h
+        orm_lib/inc/drogon/orm/DbClient.h
+        orm_lib/inc/drogon/orm/DbConfig.h
+        orm_lib/inc/drogon/orm/DbListener.h
+        orm_lib/inc/drogon/orm/DbTypes.h
+        orm_lib/inc/drogon/orm/Exception.h
+        orm_lib/inc/drogon/orm/Field.h
+        orm_lib/inc/drogon/orm/FunctionTraits.h
+        orm_lib/inc/drogon/orm/Mapper.h
+        orm_lib/inc/drogon/orm/CoroMapper.h
+        orm_lib/inc/drogon/orm/Result.h
+        orm_lib/inc/drogon/orm/ResultIterator.h
+        orm_lib/inc/drogon/orm/Row.h
+        orm_lib/inc/drogon/orm/RowIterator.h
+        orm_lib/inc/drogon/orm/SqlBinder.h
+        orm_lib/inc/drogon/orm/RestfulController.h)
+    install(FILES ${ORM_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/orm)
 
-# set(DROGON_UTIL_HEADERS
-#     lib/inc/drogon/utils/coroutine.h
-#     lib/inc/drogon/utils/FunctionTraits.h
-#     lib/inc/drogon/utils/HttpConstraint.h
-#     lib/inc/drogon/utils/OStringStream.h
-#     lib/inc/drogon/utils/Utilities.h
-#     lib/inc/drogon/utils/monitoring.h)
-# install(FILES ${DROGON_UTIL_HEADERS}
-#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils)
+    set(NOSQL_HEADERS
+        nosql_lib/redis/inc/drogon/nosql/RedisClient.h
+        nosql_lib/redis/inc/drogon/nosql/RedisResult.h
+        nosql_lib/redis/inc/drogon/nosql/RedisSubscriber.h
+        nosql_lib/redis/inc/drogon/nosql/RedisException.h)
+    install(FILES ${NOSQL_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/nosql)
 
-# set(DROGON_MONITORING_HEADERS
-#     lib/inc/drogon/utils/monitoring/Counter.h
-#     lib/inc/drogon/utils/monitoring/Metric.h
-#     lib/inc/drogon/utils/monitoring/Registry.h
-#     lib/inc/drogon/utils/monitoring/Collector.h
-#     lib/inc/drogon/utils/monitoring/Sample.h
-#     lib/inc/drogon/utils/monitoring/Gauge.h
-#     lib/inc/drogon/utils/monitoring/Histogram.h)
+    set(DROGON_UTIL_HEADERS
+        lib/inc/drogon/utils/coroutine.h
+        lib/inc/drogon/utils/FunctionTraits.h
+        lib/inc/drogon/utils/HttpConstraint.h
+        lib/inc/drogon/utils/OStringStream.h
+        lib/inc/drogon/utils/Utilities.h
+        lib/inc/drogon/utils/monitoring.h)
+    install(FILES ${DROGON_UTIL_HEADERS}
+        DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils)
 
-# install(FILES ${DROGON_MONITORING_HEADERS}
-#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils/monitoring)
+    set(DROGON_MONITORING_HEADERS
+        lib/inc/drogon/utils/monitoring/Counter.h
+        lib/inc/drogon/utils/monitoring/Metric.h
+        lib/inc/drogon/utils/monitoring/Registry.h
+        lib/inc/drogon/utils/monitoring/Collector.h
+        lib/inc/drogon/utils/monitoring/Sample.h
+        lib/inc/drogon/utils/monitoring/Gauge.h
+        lib/inc/drogon/utils/monitoring/Histogram.h)
 
-# set(DROGON_PLUGIN_HEADERS
-#     lib/inc/drogon/plugins/Plugin.h
-#     lib/inc/drogon/plugins/Redirector.h
-#     lib/inc/drogon/plugins/SecureSSLRedirector.h
-#     lib/inc/drogon/plugins/AccessLogger.h
-#     lib/inc/drogon/plugins/RealIpResolver.h
-#     lib/inc/drogon/plugins/Hodor.h
-#     lib/inc/drogon/plugins/SlashRemover.h
-#     lib/inc/drogon/plugins/GlobalFilters.h
-#     lib/inc/drogon/plugins/PromExporter.h)
+    install(FILES ${DROGON_MONITORING_HEADERS}
+        DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils/monitoring)
 
-# install(FILES ${DROGON_PLUGIN_HEADERS}
-#     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/plugins)
+    set(DROGON_PLUGIN_HEADERS
+        lib/inc/drogon/plugins/Plugin.h
+        lib/inc/drogon/plugins/Redirector.h
+        lib/inc/drogon/plugins/SecureSSLRedirector.h
+        lib/inc/drogon/plugins/AccessLogger.h
+        lib/inc/drogon/plugins/RealIpResolver.h
+        lib/inc/drogon/plugins/Hodor.h
+        lib/inc/drogon/plugins/SlashRemover.h
+        lib/inc/drogon/plugins/GlobalFilters.h
+        lib/inc/drogon/plugins/PromExporter.h)
+
+    install(FILES ${DROGON_PLUGIN_HEADERS}
+        DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/plugins)
+
+endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
                ${DROGON_SOURCES}
@@ -823,84 +832,88 @@ source_group("Private Headers"
              FILES
              ${private_headers})
 
-# # Export the package for use from the build-tree (this registers the build-tree
-# # with a global cmake-registry) export(PACKAGE Drogon)
+if(NOT ${DROGON_NO_INSTALL})
 
-# include(CMakePackageConfigHelpers)
-# # ... for the install tree
-# configure_package_config_file(
-#     cmake/templates/DrogonConfig.cmake.in
-#     ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake
-#     INSTALL_DESTINATION
-#     ${INSTALL_DROGON_CMAKE_DIR})
+    # Export the package for use from the build-tree (this registers the build-tree
+    # with a global cmake-registry) export(PACKAGE Drogon)
 
-# # version
-# write_basic_package_version_file(
-#     ${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake
-#     VERSION ${DROGON_VERSION}
-#     COMPATIBILITY SameMajorVersion)
+    include(CMakePackageConfigHelpers)
+    # ... for the install tree
+    configure_package_config_file(
+        cmake/templates/DrogonConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake
+        INSTALL_DESTINATION
+        ${INSTALL_DROGON_CMAKE_DIR})
 
-# # Install the DrogonConfig.cmake and DrogonConfigVersion.cmake
-# install(FILES
-#     "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake"
-#     "${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findcoz-profiler.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindFilesystem.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DrogonUtilities.cmake"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ParseAndAddDrogonTests.cmake"
-#     DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
-#     COMPONENT dev)
+    # version
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake
+        VERSION ${DROGON_VERSION}
+        COMPATIBILITY SameMajorVersion)
 
-# # Install the export set for use with the install-tree
-# install(EXPORT DrogonTargets
-#     DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
-#     NAMESPACE Drogon::
-#     COMPONENT dev)
+    # Install the DrogonConfig.cmake and DrogonConfigVersion.cmake
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findcoz-profiler.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindFilesystem.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DrogonUtilities.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ParseAndAddDrogonTests.cmake"
+        DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
+        COMPONENT dev)
 
-# # Doxygen documentation
-# find_package(Doxygen OPTIONAL_COMPONENTS dot dia)
-# if(DOXYGEN_FOUND)
-#   set(DOXYGEN_PROJECT_BRIEF "C++14/17-based HTTP application framework")
-#   set(DOXYGEN_OUTPUT_DIRECTORY docs/${PROJECT_NAME})
-#   set(DOXYGEN_GENERATE_LATEX NO)
-#   set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-#   set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
-#   set(DOXYGEN_STRIP_FROM_INC_PATH ${PROJECT_SOURCE_DIR}/lib/inc
-#                                   ${PROJECT_SOURCE_DIR}/orm_lib/inc
-#                                   ${CMAKE_CURRENT_BINARY_DIR}/exports)
-#   set(DOXYGEN_EXAMPLE_PATTERNS *)
-#   if(WIN32)
-#     set(DOXYGEN_PREDEFINED _WIN32)
-#   endif(WIN32)
-#   doxygen_add_docs(doc_${PROJECT_NAME}
-#                    README.md
-#                    README.zh-CN.md
-#                    README.zh-TW.md
-#                    ChangeLog.md
-#                    CONTRIBUTING.md
-#                    ${DROGON_HEADERS}
-#                    ${DROGON_UTIL_HEADERS}
-#                    ${DROGON_PLUGIN_HEADERS}
-#                    ${ORM_HEADERS}
-#                    COMMENT "Generate documentation")
-#   if(NOT TARGET doc)
-#     add_custom_target(doc)
-#   endif()
-#   add_dependencies(doc doc_${PROJECT_NAME})
-#   if (DROGON_BUILD_DOC)
-#     add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
-#     # Don't install twice, so limit to Debug (assume developer)
-#     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
-#             TYPE DOC
-#             CONFIGURATIONS Debug)
-#   endif(DROGON_BUILD_DOC)
-# endif(DOXYGEN_FOUND)
+    # Install the export set for use with the install-tree
+    install(EXPORT DrogonTargets
+        DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
+        NAMESPACE Drogon::
+        COMPONENT dev)
 
-# include(cmake/Packages.cmake)
+    # Doxygen documentation
+    find_package(Doxygen OPTIONAL_COMPONENTS dot dia)
+    if(DOXYGEN_FOUND)
+    set(DOXYGEN_PROJECT_BRIEF "C++14/17-based HTTP application framework")
+    set(DOXYGEN_OUTPUT_DIRECTORY docs/${PROJECT_NAME})
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+    set(DOXYGEN_STRIP_FROM_INC_PATH ${PROJECT_SOURCE_DIR}/lib/inc
+                                    ${PROJECT_SOURCE_DIR}/orm_lib/inc
+                                    ${CMAKE_CURRENT_BINARY_DIR}/exports)
+    set(DOXYGEN_EXAMPLE_PATTERNS *)
+    if(WIN32)
+        set(DOXYGEN_PREDEFINED _WIN32)
+    endif(WIN32)
+    doxygen_add_docs(doc_${PROJECT_NAME}
+                    README.md
+                    README.zh-CN.md
+                    README.zh-TW.md
+                    ChangeLog.md
+                    CONTRIBUTING.md
+                    ${DROGON_HEADERS}
+                    ${DROGON_UTIL_HEADERS}
+                    ${DROGON_PLUGIN_HEADERS}
+                    ${ORM_HEADERS}
+                    COMMENT "Generate documentation")
+    if(NOT TARGET doc)
+        add_custom_target(doc)
+    endif()
+    add_dependencies(doc doc_${PROJECT_NAME})
+    if (DROGON_BUILD_DOC)
+        add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
+        # Don't install twice, so limit to Debug (assume developer)
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
+                TYPE DOC
+                CONFIGURATIONS Debug)
+    endif(DROGON_BUILD_DOC)
+    endif(DOXYGEN_FOUND)
+
+    include(cmake/Packages.cmake)
+
+endif()
