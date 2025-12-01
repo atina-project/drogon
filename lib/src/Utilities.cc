@@ -50,6 +50,14 @@
 #include <sys/stat.h>
 #include <stdarg.h>
 
+#ifdef MICRO_SECONDS_PRE_SEC
+#define MICRO_SECONDS_PER_SEC MICRO_SECONDS_PRE_SEC
+#else
+#ifndef MICRO_SECONDS_PER_SEC
+#define MICRO_SECONDS_PER_SEC 1000000LL
+#endif
+#endif
+
 #ifdef _WIN32
 
 char *strptime(const char *s, const char *f, struct tm *tm)
@@ -1026,7 +1034,7 @@ char *getHttpFullDate(const trantor::Date &date)
 {
     static thread_local int64_t lastSecond = 0;
     static thread_local char lastTimeString[128] = {0};
-    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PRE_SEC;
+    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PER_SEC;
     if (nowSecond == lastSecond)
     {
         return lastTimeString;
@@ -1042,7 +1050,7 @@ void dateToCustomFormattedString(const std::string &fmtStr,
                                  std::string &str,
                                  const trantor::Date &date)
 {
-    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PRE_SEC;
+    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PER_SEC;
     time_t seconds = static_cast<time_t>(nowSecond);
     struct tm tm_LValue = date.tmStruct();
     std::stringstream Out;
@@ -1055,7 +1063,7 @@ const std::string &getHttpFullDateStr(const trantor::Date &date)
 {
     static thread_local int64_t lastSecond = 0;
     static thread_local std::string lastTimeString(128, 0);
-    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PRE_SEC;
+    auto nowSecond = date.microSecondsSinceEpoch() / MICRO_SECONDS_PER_SEC;
     if (nowSecond == lastSecond)
     {
         return lastTimeString;
@@ -1085,7 +1093,7 @@ trantor::Date getHttpDate(const std::string &httpFullDateString)
         if (strptime(httpFullDateString.c_str(), format, &tmptm) != NULL)
         {
             auto epoch = timegm(&tmptm);
-            return trantor::Date(epoch * MICRO_SECONDS_PRE_SEC);
+            return trantor::Date(epoch * MICRO_SECONDS_PER_SEC);
         }
     }
     LOG_WARN << "invalid datetime format: '" << httpFullDateString << "'";

@@ -26,6 +26,14 @@
 #include <sys/stat.h>
 #include <trantor/utils/Logger.h>
 
+#ifdef MICRO_SECONDS_PRE_SEC
+#define MICRO_SECONDS_PER_SEC MICRO_SECONDS_PRE_SEC
+#else
+#ifndef MICRO_SECONDS_PER_SEC
+#define MICRO_SECONDS_PER_SEC 1000000LL
+#endif
+#endif
+
 using namespace trantor;
 using namespace drogon;
 using namespace std::literals::string_literals;
@@ -654,13 +662,13 @@ std::shared_ptr<trantor::MsgBuffer> HttpResponseImpl::renderToBuffer()
             {
                 auto now = trantor::Date::now();
                 bool isDateChanged =
-                    ((now.microSecondsSinceEpoch() / MICRO_SECONDS_PRE_SEC) !=
+                    ((now.microSecondsSinceEpoch() / MICRO_SECONDS_PER_SEC) !=
                      httpStringDate_);
                 assert(httpString_);
                 if (isDateChanged)
                 {
                     httpStringDate_ =
-                        now.microSecondsSinceEpoch() / MICRO_SECONDS_PRE_SEC;
+                        now.microSecondsSinceEpoch() / MICRO_SECONDS_PER_SEC;
                     auto newDate = utils::getHttpFullDate(now);
 
                     httpString_ =
